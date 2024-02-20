@@ -1,37 +1,44 @@
 /**
- * PrivacyScreenPlugin.m
- * Created by Tommy-Carlos Williams on 18/07/2014
- * Copyright (c) 2014 Tommy-Carlos Williams. All rights reserved.
- * MIT Licensed
- */
+* PrivacyScreenPlugin.m
+* Created by Tommy-Carlos Williams on 18/07/2014
+* Copyright (c) 2014 Tommy-Carlos Williams. All rights reserved.
+* MIT Licensed
+*/
 #import "PrivacyScreenPlugin.h"
-
+ 
 UIImageView *imageView;
-
+ 
 @interface PrivacyScreenPlugin ()
 @property (nonatomic, assign) BOOL privacyScreenEnabled;
 @end
-
+ 
 @implementation PrivacyScreenPlugin
-
+ 
 - (void)pluginInitialize
 {
-  self.privacyScreenEnabled = YES;
+  [self setPrivacyScreenEnabled:YES];
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onAppDidBecomeActive:)
                                                name:UIApplicationDidBecomeActiveNotification object:nil];
-
+ 
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onAppWillResignActive:)
                                                name:UIApplicationWillResignActiveNotification object:nil];
 }
-
-- (BOOL)privacyScreenEnabled {
-    return _privacyScreenEnabled;
+ 
+- (void)setStatus:(CDVInvokedUrlCommand*)command
+{
+    CDVPluginResult* pluginResult = nil;
+    NSString* enabledString = [command.arguments objectAtIndex:0];
+    BOOL enabled = [enabledString boolValue];
+ 
+    if (enabledString != nil) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    } else {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Arg was null"];
+    }
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    [self setPrivacyScreenEnabled:enabled];
 }
-
-- (void)setPrivacyScreenEnabled:(BOOL)enabled {
-    _privacyScreenEnabled = enabled;
-}
-
+ 
 - (void)onAppDidBecomeActive:(UIApplication *)application
 {
   if (imageView == NULL) {
@@ -40,10 +47,10 @@ UIImageView *imageView;
     [imageView removeFromSuperview];
   }
 }
-
+ 
 - (void)onAppWillResignActive:(UIApplication *)application
 {
-  if (self.privacyScreenEnabled) {
+  if ([self privacyScreenEnabled]) {
     CDVViewController *vc = (CDVViewController*)self.viewController;
     NSString *imgName = [self getImageName:self.viewController.interfaceOrientation delegate:(id<CDVScreenOrientationDelegate>)vc device:[self getCurrentDevice]];
     UIImage *splash = [UIImage imageNamed:imgName];
@@ -61,7 +68,7 @@ UIImageView *imageView;
     }
   }
 }
-
+ 
 // Code below borrowed from the CDV splashscreen plugin @ https://github.com/apache/cordova-plugin-splashscreen
 // Made some adjustments though, becuase landscape splashscreens are not available for iphone < 6 plus
 - (CDV_iOSDevice) getCurrentDevice
@@ -87,29 +94,29 @@ UIImageView *imageView;
   device.iPhoneX  = (device.iPhone && limit == 812.0);
   device.iPhoneXR  = (device.iPhone && limit == 896.0);
   //device.iPhoneXSMax  = (device.iPhone && limit == 896.0);
-
+ 
   return device;
 }
-
+ 
 - (NSString*)getImageName:(UIInterfaceOrientation)currentOrientation delegate:(id<CDVScreenOrientationDelegate>)orientationDelegate device:(CDV_iOSDevice)device
 {
   // Use UILaunchImageFile if specified in plist.  Otherwise, use Default.
   NSString* imageName = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"UILaunchImageFile"];
-
+ 
   NSUInteger supportedOrientations = [orientationDelegate supportedInterfaceOrientations];
-
+ 
   // Checks to see if the developer has locked the orientation to use only one of Portrait or Landscape
   BOOL supportsLandscape = (supportedOrientations & UIInterfaceOrientationMaskLandscape);
   BOOL supportsPortrait = (supportedOrientations & UIInterfaceOrientationMaskPortrait || supportedOrientations & UIInterfaceOrientationMaskPortraitUpsideDown);
   // this means there are no mixed orientations in there
   BOOL isOrientationLocked = !(supportsPortrait && supportsLandscape);
-
+ 
   if (imageName) {
     imageName = [imageName stringByDeletingPathExtension];
   } else {
     imageName = @"Default";
   }
-
+ 
   // Add Asset Catalog specific prefixes
   if ([imageName isEqualToString:@"LaunchImage"])
   {
@@ -129,10 +136,10 @@ UIImageView *imageView;
       }
     }
   }
-
+ 
   BOOL isLandscape = supportsLandscape &&
   (currentOrientation == UIInterfaceOrientationLandscapeLeft || currentOrientation == UIInterfaceOrientationLandscapeRight);
-
+ 
   if (device.iPhone5) { // does not support landscape
     imageName = isLandscape ? nil : [imageName stringByAppendingString:@"-568h"];
   } else if (device.iPhone6) { // does not support landscape
@@ -160,7 +167,7 @@ UIImageView *imageView;
       imageName = [imageName stringByAppendingString:@"-736h"];
     }
   }
- else if (device.iPad) { // supports landscape
+else if (device.iPad) { // supports landscape
     if (isOrientationLocked) {
       imageName = [imageName stringByAppendingString:(supportsLandscape ? @"-Landscape" : @"-Portrait")];
     } else {
@@ -181,5 +188,5 @@ UIImageView *imageView;
   
   return imageName;
 }
-
+ 
 @end
