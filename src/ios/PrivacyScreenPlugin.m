@@ -7,16 +7,22 @@
 #import "PrivacyScreenPlugin.h"
 
 UIImageView *imageView;
+BOOL privacyScreenEnabled;
 
 @implementation PrivacyScreenPlugin
 
 - (void)pluginInitialize
 {
+  self.privacyScreenEnabled = YES;
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onAppDidBecomeActive:)
                                                name:UIApplicationDidBecomeActiveNotification object:nil];
 
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onAppWillResignActive:)
                                                name:UIApplicationWillResignActiveNotification object:nil];
+}
+
+- (void)setPrivacyScreenEnabled:(BOOL)enabled {
+    self.privacyScreenEnabled = enabled;
 }
 
 - (void)onAppDidBecomeActive:(UIApplication *)application
@@ -30,20 +36,22 @@ UIImageView *imageView;
 
 - (void)onAppWillResignActive:(UIApplication *)application
 {
-  CDVViewController *vc = (CDVViewController*)self.viewController;
-  NSString *imgName = [self getImageName:self.viewController.interfaceOrientation delegate:(id<CDVScreenOrientationDelegate>)vc device:[self getCurrentDevice]];
-  UIImage *splash = [UIImage imageNamed:imgName];
-  if (splash == NULL) {
-    self.viewController.view.window.hidden = YES;
-  } else {
-    imageView = [[UIImageView alloc]initWithFrame:[self.viewController.view bounds]];
-    [imageView setImage:splash];
-    
-    #ifdef __CORDOVA_4_0_0
-        [[UIApplication sharedApplication].keyWindow addSubview:imageView];
-    #else
-        [self.viewController.view addSubview:imageView];
-    #endif
+  if (self.privacyScreenEnabled) {
+    CDVViewController *vc = (CDVViewController*)self.viewController;
+    NSString *imgName = [self getImageName:self.viewController.interfaceOrientation delegate:(id<CDVScreenOrientationDelegate>)vc device:[self getCurrentDevice]];
+    UIImage *splash = [UIImage imageNamed:imgName];
+    if (splash == NULL) {
+      self.viewController.view.window.hidden = YES;
+    } else {
+      imageView = [[UIImageView alloc]initWithFrame:[self.viewController.view bounds]];
+      [imageView setImage:splash];
+      
+      #ifdef __CORDOVA_4_0_0
+          [[UIApplication sharedApplication].keyWindow addSubview:imageView];
+      #else
+          [self.viewController.view addSubview:imageView];
+      #endif
+    }
   }
 }
 
