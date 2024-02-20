@@ -21,6 +21,10 @@ BOOL privacyScreenEnabled;
                                                name:UIApplicationWillResignActiveNotification object:nil];
 }
 
+- (BOOL)privacyScreenEnabled {
+    return privacyScreenEnabled;
+}
+
 - (void)setPrivacyScreenEnabled:(BOOL)enabled {
     self.privacyScreenEnabled = enabled;
 }
