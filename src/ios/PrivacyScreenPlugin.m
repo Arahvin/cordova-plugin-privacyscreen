@@ -7,7 +7,7 @@
 #import "PrivacyScreenPlugin.h"
 
 UIImageView *imageView;
-BOOL privacyScreenEnabled;
+@property (nonatomic, assign) BOOL privacyScreenEnabled;
 
 @implementation PrivacyScreenPlugin
 
@@ -22,11 +22,11 @@ BOOL privacyScreenEnabled;
 }
 
 - (BOOL)privacyScreenEnabled {
-    return privacyScreenEnabled;
+    return self.privacyScreenEnabled;
 }
 
 - (void)setPrivacyScreenEnabled:(BOOL)enabled {
-    self.privacyScreenEnabled = enabled;
+    _privacyScreenEnabled = enabled;
 }
 
 - (void)onAppDidBecomeActive:(UIApplication *)application
