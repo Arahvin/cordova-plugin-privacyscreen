@@ -31,6 +31,17 @@ public class PrivacyScreenPlugin extends CordovaPlugin {
     }
   }
 
+  @Override
+    public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
+        if (action.equals("setStatus")) {
+            boolean enable = args.getBoolean(0); // get the boolean value from JavaScript
+            setStatus(enable);
+            callbackContext.success();
+            return true;
+        }
+        return false;
+    }
+
   private boolean isDebug(Activity activity) {
     try {
       Class<?> buildConfigClass = Class.forName(activity.getPackageName() + ".BuildConfig");
@@ -41,5 +52,14 @@ public class PrivacyScreenPlugin extends CordovaPlugin {
       return false;
     }
   }
+
+  private void setStatus(boolean enable) {
+        Activity activity = this.cordova.getActivity();
+        if (enable) {
+            activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
+        } else {
+            activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
+        }
+    }
 }
 
